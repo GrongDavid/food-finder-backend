@@ -1,5 +1,11 @@
 const db = require('../db')
 const bcrypt = require('bcrypt')
+const {
+	UnathorizedError,
+	ExpressError,
+	BadRequestError,
+	NotFoundError,
+} = require('../expressError')
 
 class User {
 	static async authenticate(username, password) {
@@ -23,18 +29,18 @@ class User {
 				return user
 			}
 
-			//throw new UnathorizedError
+			throw new console.error('username or password is incorrect')
 		}
 	}
 
-	static async register(
+	static async register({
 		username,
 		password,
 		firstName,
 		lastName,
 		email,
-		isAdmin
-	) {
+		isAdmin,
+	}) {
 		const checkDuplicate = await db.query(
 			`SELECT username
             FROM users
@@ -43,7 +49,11 @@ class User {
 		)
 
 		if (checkDuplicate.rows[0]) {
-			//throw error
+			throw new BadRequestError('This user already exists')
+		}
+
+		if (!password) {
+			throw new BadRequestError('No password given')
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 12)
@@ -57,10 +67,10 @@ class User {
                 email,
                 is_admin)
                 VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING username, first_name AS "firstName,
-                last_name AS "lastName,
+                RETURNING username, first_name AS "firstName",
+                last_name AS "lastName",
                 email,
-                is_admin AS "isAdmin`,
+                is_admin AS "isAdmin"`,
 			[username, hashedPassword, firstName, lastName, email, isAdmin]
 		)
 
@@ -73,8 +83,11 @@ class User {
 		const res = await db.query(
 			`SELECT username,
             first_name AS "firstName",
-            last_name AS "lastName,
+            last_name AS "lastName",
             email,
+			default_address AS "defaultAddress",
+			default_num_of_restaurants AS "defaultNumOfRestaurants",
+			default_price_level AS "defaultPriceLevel",
             is_admin AS "isAdmin"
             FROM users
             ORDER BY username`
@@ -85,12 +98,14 @@ class User {
 
 	static async get(username) {
 		const res = await db.query(
-			`
-        SELECT username,
-        first_name AS "firstName,
+			`SELECT username,
+        first_name AS "firstName",
         last_name AS "lastName",
         email,
-        is_admin AS "isAdmin
+		default_address AS "defaultAddress",
+		default_num_of_restaurants AS "defaultNumOfRestaurants",
+		default_price_level AS "defaultPriceLevel",
+        is_admin AS "isAdmin"
         FROM users
         WHERE username=$1`,
 			[username]
@@ -99,8 +114,10 @@ class User {
 		const user = res.rows[0]
 
 		if (!user) {
-			//throw error
+			throw new NotFoundError(`Couldn't find user: ${username}`)
 		}
+
+		return user
 	}
 
 	static async remove(username) {
@@ -115,7 +132,7 @@ class User {
 		const user = result.rows[0]
 
 		if (!user) {
-			//throw error
+			throw new NotFoundError(`Couldn't find user: ${username}`)
 		}
 	}
 }
