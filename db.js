@@ -6,6 +6,7 @@ const { getDatabaseUri, DB_PASSWORD } = require('./config')
 let db
 
 if (process.env.NODE_ENV === 'production') {
+	console.log('production')
 	db = new Client({
 		host: process.env.HOST_ENV,
 		port: 5432,
