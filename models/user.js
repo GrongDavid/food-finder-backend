@@ -129,11 +129,42 @@ class User {
 			[username]
 		)
 
-		const user = result.rows[0]
+		const user = res.rows[0]
 
 		if (!user) {
 			throw new NotFoundError(`Couldn't find user: ${username}`)
 		}
+	}
+
+	static async update(username, data) {
+		console.log(data)
+		const res = await db.query(
+			`UPDATE users
+			SET email = $1,
+			default_address = $2,
+			default_num_of_restaurants = $3,
+			default_price_level = $4
+			WHERE username=$5
+			RETURNING username, 
+				first_name AS "firstName",
+            	last_name AS "lastName",
+                email,
+				default_address AS "defaultAddress",
+				default_num_of_restaurants AS "defaultNumOfRestaurants",
+				default_price_level AS "defaultPriceLevel"`,
+			[
+				data.email,
+				data.defaultAddress,
+				data.defaultNumOfRestaurants,
+				data.defaultPriceLevel,
+				username,
+			]
+		)
+
+		const user = res.rows[0]
+		console.log(user)
+		if (!user) throw new NotFoundError(`No user ${username}`)
+		return user
 	}
 }
 

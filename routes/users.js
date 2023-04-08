@@ -9,14 +9,8 @@ const {
 //TODO error handling
 const createToken = require('../helpers/token')
 
-router.post('/', ensureAdmin, async function (req, res, next) {
+router.post('/', async function (req, res, next) {
 	try {
-		//validate JSONSchema
-		// let validator
-		// if (!validator.valid) {
-		// 	const errors = validator.errors.map((error) => error.stack)
-		// 	//throw error
-		// }
 		console.log(req.body)
 		const user = await User.register(req.body)
 		const token = createToken(user)
@@ -44,37 +38,22 @@ router.get('/:username', async function (req, res, next) {
 	}
 })
 
-// router.patch(
-// 	'/:username',
-// 	ensureCorrectUserOrAdmin,
-// 	async function (req, res, next) {
-// 		try {
-// 			//validator, should be const. let until implementation
-// 			let validator
-// 			if (!validator.valid) {
-// 				const errors = validator.errors.map((error) => error.stack)
-// 				//throw error
-// 			}
-// 			//update not yet implemented
-// 			const user = await User.update(req.params.username, req.body)
-// 			return res.json({ user })
-// 		} catch (error) {
-// 			return next(error)
-// 		}
-// 	}
-// )
-
-router.delete(
-	'/:username',
-	ensureCorrectUserOrAdmin,
-	async function (req, res, next) {
-		try {
-			await User.remove(req.params.username)
-			return res.json({ deleted: req.params.username })
-		} catch (error) {
-			return next(error)
-		}
+router.patch('/:username', async function (req, res, next) {
+	try {
+		const user = await User.update(req.params.username, req.body)
+		return res.json({ user })
+	} catch (err) {
+		return next(err)
 	}
-)
+})
+
+router.delete('/:username', async function (req, res, next) {
+	try {
+		await User.remove(req.params.username)
+		return res.json({ deleted: req.params.username })
+	} catch (error) {
+		return next(error)
+	}
+})
 
 module.exports = router
