@@ -6,6 +6,8 @@ const SECRET_KEY = process.env.SECRET_KEY || 'secret-dev'
 
 const PORT = 3001
 
+const DB_PASSWORD = 'Kd2Rwuusxkhy1kXrIcXsgNxBsLDRnPet'
+
 // Use dev database, testing database, or via env var, production database
 function getDatabaseUri() {}
 
@@ -26,4 +28,5 @@ module.exports = {
 	PORT,
 	BCRYPT_WORK_FACTOR,
 	getDatabaseUri,
+	DB_PASSWORD,
 }
